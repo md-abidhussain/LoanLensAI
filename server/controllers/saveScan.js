@@ -3,8 +3,8 @@ const db = require('../database/database');
 function insertScan(filename, analysis) {
   return new Promise((resolve, reject) => {
     const query = `
-      INSERT INTO scans (filename, summary, stated_interest_rate, effective_apr, risk_score, red_flags)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO scans (filename, summary, stated_interest_rate, effective_apr, risk_score, red_flags, negotiation_tips)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     const params = [
       filename,
@@ -12,7 +12,8 @@ function insertScan(filename, analysis) {
       analysis.stated_interest_rate,
       analysis.effective_apr,
       analysis.risk_score,
-      JSON.stringify(analysis.red_flags)
+      JSON.stringify(analysis.red_flags),
+      JSON.stringify(analysis.negotiation_tips)
     ];
 
     db.run(query, params, function(err) {

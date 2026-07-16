@@ -1,7 +1,7 @@
 const extractPdfText = require('../services/extractPdfText');
 const { analyzeDocument } = require('../services/geminiClient');
 const { insertScan, fetchScans, fetchScanById } = require('./saveScan');
-const { formatScanResponse } = require('./responseFormatter');
+const { formatScanResponse, calculateHealthMetrics } = require('./responseFormatter');
 
 async function createScan(req, res) {
   const file = req.file;
@@ -46,7 +46,21 @@ async function getScanById(req, res) {
       console.error('json parse failure', parseErr.message);
       row.red_flags = [];
     }
-    return res.json(row);
+    
+    try {
+      row.negotiation_tips = JSON.parse(row.negotiation_tips || '[]');
+    } catch (parseErr) {
+      console.error('json parse failure', parseErr.message);
+      row.negotiation_tips = [];
+    }
+    
+    const metrics = calculateHealthMetrics(row.red_flags, row.risk_score);
+    const responseData = {
+      ...row,
+      ...metrics
+    };
+    
+    return res.json(responseData);
   } catch (err) {
     console.error('scan detail retrieval failure', err.message);
     return res.status(500).json({ error: 'failed to retrieve scan detail' });

@@ -7,6 +7,10 @@ const modalRate = document.getElementById('modalRate');
 const modalApr = document.getElementById('modalApr');
 const modalRisk = document.getElementById('modalRisk');
 const modalRedFlags = document.getElementById('modalRedFlags');
+const modalHealthMeter = document.getElementById('modalHealthMeter');
+const modalHealthScore = document.getElementById('modalHealthScore');
+const modalTopReasons = document.getElementById('modalTopReasons');
+const modalNegotiationTips = document.getElementById('modalNegotiationTips');
 
 document.addEventListener('DOMContentLoaded', fetchHistory);
 
@@ -54,9 +58,36 @@ async function showScanDetail(id) {
     modalSummary.textContent = scan.summary;
     modalRate.textContent = scan.stated_interest_rate;
     modalApr.textContent = scan.effective_apr;
+    modalHealthMeter.textContent = scan.health_meter;
+    modalHealthScore.textContent = scan.health_score;
     
     modalRisk.textContent = scan.risk_score;
     modalRisk.className = `badge p-2 risk-${scan.risk_score.toLowerCase()}`;
+
+    modalTopReasons.innerHTML = '';
+    const topFlags = (scan.red_flags || []).slice(0, 3);
+    if (topFlags.length === 0) {
+      modalTopReasons.innerHTML = '<li class="text-muted">• No major risk reasons</li>';
+    } else {
+      topFlags.forEach(f => {
+        const li = document.createElement('li');
+        li.className = 'fw-semibold py-1';
+        li.textContent = `• ${f.explanation}`;
+        modalTopReasons.appendChild(li);
+      });
+    }
+
+    modalNegotiationTips.innerHTML = '';
+    if (!scan.negotiation_tips || scan.negotiation_tips.length === 0) {
+      modalNegotiationTips.innerHTML = '<li class="list-group-item text-muted">no suggestions</li>';
+    } else {
+      scan.negotiation_tips.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item list-group-item-info my-1 rounded border-0 shadow-sm';
+        li.textContent = t;
+        modalNegotiationTips.appendChild(li);
+      });
+    }
 
     modalRedFlags.innerHTML = '';
     if (!scan.red_flags || scan.red_flags.length === 0) {

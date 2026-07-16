@@ -40,6 +40,15 @@
             <h3>Analysis Results</h3>
             <span id="riskScoreBadge"></span>
           </div>
+          <div class="card bg-light p-3 mb-3 border-0 rounded text-center">
+            <h5 class="mb-1 text-secondary">Loan Health Meter</h5>
+            <div class="font-monospace fs-4 text-primary" id="healthMeterText">██████░░░░</div>
+            <div class="fw-bold fs-5 text-dark mt-1"><span id="healthScoreText">67</span>% Loan Health</div>
+          </div>
+          <div class="mb-3">
+            <h5>Top 3 Reasons</h5>
+            <ul id="topReasonsList" class="list-unstyled ps-3"></ul>
+          </div>
           <div class="row mb-3">
             <div class="col-6"><strong>Stated Rate:</strong> <span id="interestRateText"></span></div>
             <div class="col-6"><strong>Effective APR:</strong> <span id="effectiveAprText"></span></div>
@@ -47,6 +56,10 @@
           <div class="mb-3">
             <h5>Summary</h5>
             <p id="summaryText" class="text-muted"></p>
+          </div>
+          <div class="mb-3">
+            <h5>AI Suggestions (What to Negotiate)</h5>
+            <ul id="negotiationTipsList" class="list-group"></ul>
           </div>
           <div>
             <h5>Red Flags</h5>

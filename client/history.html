@@ -47,6 +47,15 @@
             <h6>Risk Rating</h6>
             <span id="modalRisk"></span>
           </div>
+          <div class="card bg-light p-3 mb-3 border-0 rounded text-center">
+            <h6 class="mb-1 text-secondary">Loan Health Meter</h6>
+            <div class="font-monospace fs-4 text-primary" id="modalHealthMeter">██████░░░░</div>
+            <div class="fw-bold fs-6 text-dark mt-1"><span id="modalHealthScore">67</span>% Loan Health</div>
+          </div>
+          <div class="mb-3">
+            <h6>Top 3 Reasons</h6>
+            <ul id="modalTopReasons" class="list-unstyled ps-3"></ul>
+          </div>
           <div class="row mb-3">
             <div class="col-6"><strong>Stated Rate:</strong> <span id="modalRate"></span></div>
             <div class="col-6"><strong>Effective APR:</strong> <span id="modalApr"></span></div>
@@ -54,6 +63,10 @@
           <div class="mb-3">
             <h6>Summary</h6>
             <p id="modalSummary" class="text-muted"></p>
+          </div>
+          <div class="mb-3">
+            <h6>AI Suggestions (What to Negotiate)</h6>
+            <ul id="modalNegotiationTips" class="list-group"></ul>
           </div>
           <div>
             <h6>Red Flags</h6>

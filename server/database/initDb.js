@@ -12,16 +12,22 @@ function initDb() {
           effective_apr TEXT NOT NULL,
           risk_score TEXT NOT NULL,
           red_flags TEXT NOT NULL,
+          negotiation_tips TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
         (err) => {
           if (err) {
             console.error('database table creation failure', err.message);
-            reject(err);
-          } else {
-            console.log('database scans table initialized');
-            resolve();
+            return reject(err);
           }
+          
+          db.run(
+            `ALTER TABLE scans ADD COLUMN negotiation_tips TEXT`,
+            () => {
+              console.log('database scans table initialized');
+              resolve();
+            }
+          );
         }
       );
     });

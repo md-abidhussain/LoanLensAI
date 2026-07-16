@@ -23,6 +23,14 @@ function parseAnalysisJson(responseText) {
     parsedData.risk_score = 'Medium';
   }
 
+  if (!Array.isArray(parsedData.negotiation_tips)) {
+    parsedData.negotiation_tips = [];
+  } else {
+    parsedData.negotiation_tips = parsedData.negotiation_tips
+      .filter(tip => typeof tip === 'string')
+      .map(tip => tip.trim());
+  }
+
   if (!Array.isArray(parsedData.red_flags)) {
     parsedData.red_flags = [];
   } else {

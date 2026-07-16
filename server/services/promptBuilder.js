@@ -6,6 +6,9 @@ function buildPrompt(fileData, fileMimeType, extractedText = null) {
     "stated_interest_rate": "stated interest rate",
     "effective_apr": "estimated effective APR",
     "risk_score": "Low" or "Medium" or "High" or "Predatory",
+    "negotiation_tips": [
+      "negotiation suggestion tip"
+    ],
     "red_flags": [
       {
         "clause": "clause quote",
