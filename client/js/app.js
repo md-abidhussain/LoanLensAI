@@ -29,7 +29,7 @@ scanForm.addEventListener('submit', async (e) => {
     if (!response.ok) throw new Error(data.error || 'unexpected error occurred during scan');
     renderResult(data);
   } catch (err) {
-    showError(err.message + ', verify your file/key and try again');
+    showError(err.message + ', please try again');
   } finally {
     showLoading(false);
   }

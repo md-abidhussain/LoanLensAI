@@ -1,13 +1,16 @@
 const multer = require('multer');
 const path = require('path');
+const { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } = require('../config/constants');
 
 const fileStorage = multer.memoryStorage();
 
 function fileFilter(req, file, cb) {
   const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png'];
   const fileExtension = path.extname(file.originalname).toLowerCase();
-  
-  if (allowedExtensions.includes(fileExtension)) {
+  const hasAllowedExtension = allowedExtensions.includes(fileExtension);
+  const hasAllowedMime = ALLOWED_MIME_TYPES.includes(file.mimetype);
+
+  if (hasAllowedExtension && hasAllowedMime) {
     cb(null, true);
   } else {
     cb(new Error('unsupported file type, only pdf, jpg, and png are allowed'), false);
@@ -17,7 +20,7 @@ function fileFilter(req, file, cb) {
 const upload = multer({
   storage: fileStorage,
   limits: {
-    fileSize: 5 * 1024 * 1024
+    fileSize: MAX_FILE_SIZE
   },
   fileFilter: fileFilter
 }).single('file');

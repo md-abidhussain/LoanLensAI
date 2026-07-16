@@ -1,6 +1,4 @@
-const { geminiModel } = require('../config/geminiConfig');
-
-async function analyzeDocument(fileData, fileMimeType, extractedText = null) {
+function buildPrompt(fileData, fileMimeType, extractedText = null) {
   const promptText = `
   Analyze this loan agreement and output a JSON object with this exact schema:
   {
@@ -32,29 +30,9 @@ async function analyzeDocument(fileData, fileMimeType, extractedText = null) {
     });
   }
 
-  try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: 'user', parts: contentParts }],
-      generationConfig: {
-        responseMimeType: 'application/json'
-      }
-    });
-
-    const responseText = result.response.text();
-    let parsedData;
-    try {
-      parsedData = JSON.parse(responseText);
-    } catch (parseErr) {
-      console.error('gemini json parse failure', parseErr.message);
-      throw new Error('the analysis returned invalid data, please retry');
-    }
-    return parsedData;
-  } catch (err) {
-    console.error('gemini analysis error', err.message);
-    throw new Error('failed to complete gemini analysis, please try again');
-  }
+  return contentParts;
 }
 
 module.exports = {
-  analyzeDocument
+  buildPrompt
 };

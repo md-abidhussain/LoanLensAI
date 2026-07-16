@@ -1,4 +1,4 @@
-const db = require('./dbConnection');
+const db = require('./database');
 
 function initDb() {
   return new Promise((resolve, reject) => {

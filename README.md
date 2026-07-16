@@ -1,27 +1,102 @@
 # LoanLens AI
 
-LoanLens AI is a hackathon MVP designed to help people understand their loan agreements and identify predatory lending terms. 
+LoanLens AI is a hackathon MVP designed to help people analyze loan agreements, estimate effective APR, and flag predatory lending clauses using Google Gemini.
 
-## What It Does
-- Accepts loan agreements uploaded in PDF, JPG, or PNG formats.
-- Extracts text using pdf-parse for PDFs, or sends images directly to Google Gemini for analysis.
-- Connects to Google Gemini 2.5 Flash to automatically audit loan terms.
-- Displays key details: a plain-language summary, stated rate, estimated effective APR, risk rating, and a list of red flag clauses.
-- Saves every scan to an SQLite database.
-- Provides a history view to review past analysis results.
+## System Architecture
 
-## Environment Variables
-Create a .env file in the root directory with the following variables:
-PORT=3000
-DATABASE_PATH=database.db
-GEMINI_API_KEY=your_gemini_api_key_here
+The application is structured as a decoupled Node.js/Express backend and a vanilla HTML/Bootstrap 5 frontend.
 
-## How to Run Locally
-1. Install backend dependencies:
-   npm install
-2. Start the application:
-   npm start
-3. Open your browser and navigate to http://localhost:3000.
+```mermaid
+graph TD
+    Client[Browser Frontend] -->|File Upload / Scan| App[Express App]
+    Client -->|Fetch History| App
+    App -->|Route API| Routes[Scan Routes]
+    Routes -->|Coordinate| Controller[Scan Controller]
+    Controller -->|Query / Save| SaveScan[Save Scan Helper]
+    SaveScan -->|SQLite Connect| DB[Database.js]
+    Controller -->|Format API Response| ResFormatter[Response Formatter]
+    Controller -->|Extract text if PDF| PDFParse[PDF Extract Service]
+    Controller -->|Call AI Analysis| GeminiClient[Gemini Client]
+    GeminiClient -->|Build Prompt Parts| PromptBuilder[Prompt Builder]
+    GeminiClient -->|Call API| GeminiAPI[Google Gemini 3.1 Flash-Lite]
+    GeminiClient -->|Validate Response Schema| JSONParser[JSON Parser]
+```
+
+## Folder Structure
+
+```text
+LoanLensAI/
+├── client/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   ├── app.js
+│   │   └── history.js
+│   ├── assets/
+│   │   └── .gitkeep
+│   ├── index.html
+│   └── history.html
+├── server/
+│   ├── config/
+│   │   ├── constants.js
+│   │   ├── dbConfig.js
+│   │   └── geminiConfig.js
+│   ├── controllers/
+│   │   ├── responseFormatter.js
+│   │   ├── saveScan.js
+│   │   └── scanController.js
+│   ├── database/
+│   │   ├── database.js
+│   │   └── initDb.js
+│   ├── middleware/
+│   │   └── uploadMiddleware.js
+│   ├── routes/
+│   │   └── scanRoutes.js
+│   ├── services/
+│   │   ├── extractPdfText.js
+│   │   ├── geminiClient.js
+│   │   ├── jsonParser.js
+│   │   └── promptBuilder.js
+│   ├── uploads/
+│   │   └── .gitkeep
+│   └── app.js
+├── .env.example
+├── .gitignore
+├── package.json
+└── README.md
+```
+
+## API Endpoints
+
+### 1. Submit Scan
+- **Endpoint**: `POST /api/scan`
+- **Payload**: Multipart file upload (`file` key containing PDF, JPG, or PNG)
+- **Output**: JSON payload matching output schema.
+
+### 2. List History
+- **Endpoint**: `GET /api/scans`
+- **Output**: Array of past scans (ID, filename, risk score, date).
+
+### 3. Fetch Scan Details
+- **Endpoint**: `GET /api/scans/:id`
+- **Output**: Full detailed JSON log of the scan.
+
+## Deployment Guide (Render)
+
+### Free Tier Deployment
+1. Create a new Web Service on Render pointing to your repository.
+2. Select **Node** runtime.
+3. Use `npm install` for the Build Command, and `node server/server.js` for the Start Command.
+4. Add environment variable `GEMINI_API_KEY` containing your Google AI Studio key.
+
+### Persistent Database Deployment (Starter Tier)
+1. Add a **Persistent Disk** on Render with Mount Path `/data`.
+2. Configure environment variable `DATABASE_PATH` with value `/data/database.db`.
 
 ## How AI is Used
-I used Google Gemini 2.5 Flash to do the heavy lifting of reading and interpreting the loan documents. When someone uploads a PDF, the backend extracts the text first and passes it to Gemini along with a specific prompt asking for structural terms. For images, I take advantage of Gemini's multimodal capabilities and send the image file directly as raw bytes, letting Gemini perform the text extraction and interpretation in one step. I asked Gemini to strictly return its analysis as a JSON object that matches our exact schema, which makes it easy to parse the results, display them in the frontend, and save them directly to SQLite.
+We connect to the `gemini-3.1-flash-lite` model. For text documents (PDFs), we extract raw text and prompt Gemini for structured analysis. For image uploads, we leverage multimodal inputs and upload raw image buffer bytes directly to Gemini to perform analysis. Gemini output is strictly parsed as JSON and validated prior to database insertion.
+
+## Future Scope
+- **Agentic AI Expansion**: Decoupled prompt building and client execution files make it easy to migrate to an agentic execution loop (e.g. self-correcting prompt loops).
+- **OCR Fallback**: If standard PDF text extraction returns empty or fails, convert the PDF pages into image bytes and process them multimodally.
+- **Scans Pagination**: Add pagination limit parameter to database query methods.
