@@ -6,6 +6,7 @@ function parseAnalysisJson(responseText) {
     parsedData = JSON.parse(responseText);
   } catch (parseErr) {
     console.error('gemini output is not valid json', parseErr.message);
+    console.error('raw gemini response was:', responseText);
     throw new Error('the analysis returned invalid data, please retry');
   }
 

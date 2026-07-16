@@ -64,6 +64,13 @@ async function showScanDetail(id) {
     modalRisk.textContent = scan.risk_score;
     modalRisk.className = `badge p-2 risk-${scan.risk_score.toLowerCase()}`;
 
+    modalHealthMeter.className = 'font-monospace fs-4';
+    const riskClass = scan.risk_score.toLowerCase();
+    if (riskClass === 'low') modalHealthMeter.classList.add('text-success');
+    else if (riskClass === 'medium') modalHealthMeter.classList.add('text-warning');
+    else if (riskClass === 'high') modalHealthMeter.classList.add('text-danger');
+    else modalHealthMeter.classList.add('text-dark');
+
     modalTopReasons.innerHTML = '';
     const topFlags = (scan.red_flags || []).slice(0, 3);
     if (topFlags.length === 0) {

@@ -1,23 +1,25 @@
 function buildPrompt(fileData, fileMimeType, extractedText = null) {
   const promptText = `
-  Analyze this loan agreement and output a JSON object with this exact schema:
+  Analyze this loan agreement and return a JSON object matching this schema. The risk_score must be one of: "Low", "Medium", "High", or "Predatory". The severity of each red flag must be one of: "low", "medium", or "high".
+  
+  JSON schema:
   {
-    "summary": "plain-language summary",
-    "stated_interest_rate": "stated interest rate",
-    "effective_apr": "estimated effective APR",
-    "risk_score": "Low" or "Medium" or "High" or "Predatory",
+    "summary": "string summary",
+    "stated_interest_rate": "string rate",
+    "effective_apr": "string APR",
+    "risk_score": "Low | Medium | High | Predatory",
     "negotiation_tips": [
-      "negotiation suggestion tip"
+      "negotiation tip description"
     ],
     "red_flags": [
       {
-        "clause": "clause quote",
-        "severity": "low" or "medium" or "high",
-        "explanation": "explanation"
+        "clause": "quote of clause",
+        "severity": "low | medium | high",
+        "explanation": "explanation description"
       }
     ]
   }
-  Do not wrap the output in markdown code blocks. Output raw JSON.
+  Do not include markdown tags. Output raw JSON.
   `;
 
   const contentParts = [{ text: promptText }];

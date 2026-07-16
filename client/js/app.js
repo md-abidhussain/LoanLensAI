@@ -60,6 +60,13 @@ function renderResult(data) {
   riskScoreBadge.textContent = data.risk_score;
   riskScoreBadge.className = `badge p-2 fs-6 risk-${data.risk_score.toLowerCase()}`;
 
+  healthMeterText.className = 'font-monospace fs-4';
+  const riskClass = data.risk_score.toLowerCase();
+  if (riskClass === 'low') healthMeterText.classList.add('text-success');
+  else if (riskClass === 'medium') healthMeterText.classList.add('text-warning');
+  else if (riskClass === 'high') healthMeterText.classList.add('text-danger');
+  else healthMeterText.classList.add('text-dark');
+
   topReasonsList.innerHTML = '';
   const topFlags = (data.red_flags || []).slice(0, 3);
   if (topFlags.length === 0) {
