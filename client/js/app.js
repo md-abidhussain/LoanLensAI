@@ -41,8 +41,10 @@ scanForm.addEventListener('submit', async (e) => {
 
 function showLoading(isLoading) {
   loadingSpinner.classList.toggle('d-none', !isLoading);
-  resultCard.classList.add('d-none');
-  errorMessage.classList.add('d-none');
+  if (isLoading) {
+    resultCard.classList.add('d-none');
+    errorMessage.classList.add('d-none');
+  }
 }
 
 function showError(message) {
@@ -57,24 +59,40 @@ function renderResult(data) {
   effectiveAprText.textContent = data.effective_apr;
   healthMeterText.textContent = data.health_meter;
   healthScoreText.textContent = data.health_score;
-  riskScoreBadge.textContent = data.risk_score;
-  riskScoreBadge.className = `badge p-2 fs-6 risk-${data.risk_score.toLowerCase()}`;
 
-  healthMeterText.className = 'font-monospace fs-4';
-  const riskClass = data.risk_score.toLowerCase();
-  if (riskClass === 'low') healthMeterText.classList.add('text-success');
-  else if (riskClass === 'medium') healthMeterText.classList.add('text-warning');
-  else if (riskClass === 'high') healthMeterText.classList.add('text-danger');
-  else healthMeterText.classList.add('text-dark');
+  const riskClass = (data.risk_score || 'medium').toLowerCase();
+  riskScoreBadge.textContent = data.risk_score;
+  riskScoreBadge.className = 'badge rounded-pill px-3 py-2 fs-6';
+  
+  const healthCard = document.getElementById('healthCard');
+  healthCard.className = 'card border-0 rounded-3 p-3 mb-4 text-center shadow-sm';
+
+  if (riskClass === 'low') {
+    riskScoreBadge.classList.add('bg-success', 'text-white');
+    healthCard.classList.add('bg-success-subtle', 'text-success-emphasis');
+    healthMeterText.className = 'font-monospace fs-3 text-success fw-bold';
+  } else if (riskClass === 'medium') {
+    riskScoreBadge.classList.add('bg-warning', 'text-dark');
+    healthCard.classList.add('bg-warning-subtle', 'text-warning-emphasis');
+    healthMeterText.className = 'font-monospace fs-3 text-warning fw-bold';
+  } else if (riskClass === 'high') {
+    riskScoreBadge.classList.add('bg-danger', 'text-white');
+    healthCard.classList.add('bg-danger-subtle', 'text-danger-emphasis');
+    healthMeterText.className = 'font-monospace fs-3 text-danger fw-bold';
+  } else {
+    riskScoreBadge.classList.add('bg-dark', 'text-white');
+    healthCard.classList.add('bg-secondary-subtle', 'text-dark-emphasis');
+    healthMeterText.className = 'font-monospace fs-3 text-dark fw-bold';
+  }
 
   topReasonsList.innerHTML = '';
   const topFlags = (data.red_flags || []).slice(0, 3);
   if (topFlags.length === 0) {
-    topReasonsList.innerHTML = '<li class="text-muted">• No major risk reasons</li>';
+    topReasonsList.innerHTML = '<li class="text-muted border-start border-3 border-secondary bg-light p-2 mb-2 rounded">• No major risk factors</li>';
   } else {
     topFlags.forEach(f => {
       const li = document.createElement('li');
-      li.className = 'fw-semibold py-1';
+      li.className = 'border-start border-3 border-danger bg-light p-2 mb-2 rounded fw-semibold';
       li.textContent = `• ${f.explanation}`;
       topReasonsList.appendChild(li);
     });
@@ -86,7 +104,7 @@ function renderResult(data) {
   } else {
     data.negotiation_tips.forEach(t => {
       const li = document.createElement('li');
-      li.className = 'list-group-item list-group-item-info my-1 rounded border-0 shadow-sm';
+      li.className = 'list-group-item border-start border-3 border-info bg-light my-1 rounded shadow-sm';
       li.textContent = t;
       negotiationTipsList.appendChild(li);
     });
@@ -98,7 +116,8 @@ function renderResult(data) {
   } else {
     data.red_flags.forEach(f => {
       const item = document.createElement('li');
-      item.className = `list-group-item red-flag-item my-2 shadow-sm rounded red-flag-${f.severity.toLowerCase()}`;
+      const severity = f.severity.toLowerCase();
+      item.className = `list-group-item red-flag-item my-2 shadow-sm rounded red-flag-${severity}`;
       item.innerHTML = `
         <strong class="text-capitalize">${f.severity} Severity</strong>
         <p class="mb-1 mt-2"><strong>Clause:</strong> "${f.clause}"</p>
