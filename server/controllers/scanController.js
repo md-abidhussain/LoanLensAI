@@ -26,7 +26,32 @@ async function createScan(req, res) {
 async function getScans(req, res) {
   try {
     const rows = await fetchScans();
-    return res.json(rows);
+    const mapped = rows.map(row => {
+      let summaryText = row.summary;
+      let loanType = 'Other Loan';
+      let verdict = 'Read Carefully';
+      let healthScore = 70;
+      let healthMeter = '███████░░░';
+      try {
+        const parsed = JSON.parse(row.summary);
+        summaryText = parsed.text;
+        loanType = parsed.loan_type || 'Other Loan';
+        verdict = parsed.verdict || 'Read Carefully';
+        healthScore = parsed.health_score || 70;
+        healthMeter = parsed.health_meter || '███████░░░';
+      } catch (e) {
+        // Fallback for legacy
+      }
+      return {
+        ...row,
+        summary: summaryText,
+        loan_type: loanType,
+        verdict: verdict,
+        health_score: healthScore,
+        health_meter: healthMeter
+      };
+    });
+    return res.json(mapped);
   } catch (err) {
     console.error('scans retrieval failure', err.message);
     return res.status(500).json({ error: 'failed to retrieve scans' });
@@ -40,6 +65,21 @@ async function getScanById(req, res) {
       return res.status(404).json({ error: 'scan not found' });
     }
     
+    let summaryText = row.summary;
+    let loanType = 'Other Loan';
+    let verdict = 'Read Carefully';
+    let verdictReason = '';
+    
+    try {
+      const parsed = JSON.parse(row.summary);
+      summaryText = parsed.text;
+      loanType = parsed.loan_type || 'Other Loan';
+      verdict = parsed.verdict || 'Read Carefully';
+      verdictReason = parsed.verdict_reason || '';
+    } catch (e) {
+      // Fallback for legacy
+    }
+
     try {
       row.red_flags = JSON.parse(row.red_flags);
     } catch (parseErr) {
@@ -57,6 +97,10 @@ async function getScanById(req, res) {
     const metrics = calculateHealthMetrics(row.red_flags, row.risk_score);
     const responseData = {
       ...row,
+      summary: summaryText,
+      loan_type: loanType,
+      verdict: verdict,
+      verdict_reason: verdictReason,
       ...metrics
     };
     

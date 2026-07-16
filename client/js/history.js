@@ -1,50 +1,147 @@
-const scanHistoryBody = document.getElementById('scanHistoryBody');
-const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+const scansGrid = document.getElementById('scansGrid');
+const emptyState = document.getElementById('emptyState');
+const searchInput = document.getElementById('searchInput');
+const riskFilter = document.getElementById('riskFilter');
 
+const statTotal = document.getElementById('statTotal');
+const statLow = document.getElementById('statLow');
+const statMedium = document.getElementById('statMedium');
+const statHigh = document.getElementById('statHigh');
+const statAvgHealth = document.getElementById('statAvgHealth');
+
+const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
 const modalTitle = document.getElementById('modalTitle');
-const modalSummary = document.getElementById('modalSummary');
-const modalRate = document.getElementById('modalRate');
-const modalApr = document.getElementById('modalApr');
-const modalRisk = document.getElementById('modalRisk');
-const modalRedFlags = document.getElementById('modalRedFlags');
-const modalHealthMeter = document.getElementById('modalHealthMeter');
-const modalHealthScore = document.getElementById('modalHealthScore');
-const modalTopReasons = document.getElementById('modalTopReasons');
-const modalNegotiationTips = document.getElementById('modalNegotiationTips');
+const modalDetailContent = document.getElementById('modalDetailContent');
+const modalPrintBtn = document.getElementById('modalPrintBtn');
+
+let allScans = [];
+
+// Dark Mode Toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+const darkModeIcon = document.getElementById('darkModeIcon');
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-bs-theme', theme);
+  darkModeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+  darkModeToggle.className = theme === 'dark' ? 'btn btn-outline-warning btn-sm' : 'btn btn-outline-light btn-sm';
+  localStorage.setItem('theme', theme);
+}
+
+darkModeToggle.addEventListener('click', () => {
+  const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+  applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+});
+
+const savedTheme = localStorage.getItem('theme') || 'light';
+applyTheme(savedTheme);
 
 document.addEventListener('DOMContentLoaded', fetchHistory);
+searchInput.addEventListener('input', filterAndRender);
+riskFilter.addEventListener('change', filterAndRender);
 
 async function fetchHistory() {
   try {
     const response = await fetch('/api/scans');
-    const scans = await response.json();
-    if (!response.ok) throw new Error(scans.error || 'failed to load history');
-    renderHistoryTable(scans);
+    allScans = await response.json();
+    if (!response.ok) throw new Error(allScans.error || 'failed to load history');
+    calculateStats(allScans);
+    filterAndRender();
   } catch (err) {
-    scanHistoryBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">${err.message}</td></tr>`;
+    scansGrid.innerHTML = `<div class="col-12 text-center text-danger py-4">${err.message}</div>`;
   }
 }
 
-function renderHistoryTable(scans) {
-  scanHistoryBody.innerHTML = '';
+function calculateStats(scans) {
+  statTotal.textContent = scans.length;
+  let low = 0;
+  let med = 0;
+  let high = 0;
+  let totalHealth = 0;
+
+  scans.forEach(s => {
+    const r = (s.risk_score || 'medium').toLowerCase();
+    if (r === 'low') low++;
+    else if (r === 'medium') med++;
+    else high++;
+    totalHealth += s.health_score || 70;
+  });
+
+  statLow.textContent = low;
+  statMedium.textContent = med;
+  statHigh.textContent = high;
+  
+  const avg = scans.length > 0 ? Math.round(totalHealth / scans.length) : 0;
+  statAvgHealth.textContent = `${avg}%`;
+}
+
+function filterAndRender() {
+  const searchVal = searchInput.value.toLowerCase().trim();
+  const filterVal = riskFilter.value.toLowerCase();
+
+  const filtered = allScans.filter(s => {
+    const matchesSearch = s.filename.toLowerCase().includes(searchVal);
+    const matchesRisk = filterVal === 'all' || (s.risk_score || '').toLowerCase() === filterVal;
+    return matchesSearch && matchesRisk;
+  });
+
+  renderCards(filtered);
+}
+
+function renderCards(scans) {
+  scansGrid.innerHTML = '';
   if (scans.length === 0) {
-    scanHistoryBody.innerHTML = '<tr><td colspan="4" class="text-center">no scan history found</td></tr>';
+    emptyState.classList.remove('d-none');
     return;
   }
+  emptyState.classList.add('d-none');
 
-  scans.forEach(scan => {
-    const tr = document.createElement('tr');
-    tr.style.cursor = 'pointer';
-    tr.addEventListener('click', () => showScanDetail(scan.id));
+  scans.forEach(s => {
+    const col = document.createElement('div');
+    col.className = 'col-md-6 col-lg-4';
     
-    const formattedDate = new Date(scan.created_at).toLocaleString();
-    tr.innerHTML = `
-      <td>${scan.id}</td>
-      <td>${scan.filename}</td>
-      <td><span class="badge risk-${scan.risk_score.toLowerCase()}">${scan.risk_score}</span></td>
-      <td>${formattedDate}</td>
+    const rClass = (s.risk_score || 'medium').toLowerCase();
+    let badgeColor = 'bg-warning text-dark';
+    if (rClass === 'low') badgeColor = 'bg-success text-white';
+    else if (rClass === 'high') badgeColor = 'bg-danger text-white';
+    else if (rClass === 'predatory') badgeColor = 'bg-dark text-white';
+
+    const formattedDate = new Date(s.created_at).toLocaleDateString();
+    
+    col.innerHTML = `
+      <div class="card card-premium h-100 p-3 bg-white">
+        <div class="card-body p-0 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge ${badgeColor} rounded-pill px-2 py-1" style="font-size: 0.75rem;">
+                Risk: ${s.risk_score}
+              </span>
+              <small class="text-muted">${formattedDate}</small>
+            </div>
+            <h5 class="fw-bold mb-2 text-truncate">${s.filename}</h5>
+            <div class="mb-3">
+              <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.75rem;">
+                <i class="bi bi-file-earmark-text"></i> ${s.loan_type || 'Other Loan'}
+              </span>
+            </div>
+            <div class="mb-3 bg-light p-2 rounded text-center">
+              <small class="text-muted d-block" style="font-size: 0.75rem;">Health Score</small>
+              <strong class="text-primary">${s.health_score || 70}%</strong>
+            </div>
+          </div>
+          <button class="btn btn-outline-primary w-100 rounded-pill btn-sm mt-3 view-btn" data-id="${s.id}">
+            View Report
+          </button>
+        </div>
+      </div>
     `;
-    scanHistoryBody.appendChild(tr);
+    scansGrid.appendChild(col);
+  });
+
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      showScanDetail(id);
+    });
   });
 }
 
@@ -55,80 +152,11 @@ async function showScanDetail(id) {
     if (!response.ok) throw new Error(scan.error || 'failed to load details');
 
     modalTitle.textContent = scan.filename;
-    modalSummary.textContent = scan.summary;
-    modalRate.textContent = scan.stated_interest_rate;
-    modalApr.textContent = scan.effective_apr;
-    modalHealthMeter.textContent = scan.health_meter;
-    modalHealthScore.textContent = scan.health_score;
-    
-    const riskClass = (scan.risk_score || 'medium').toLowerCase();
-    modalRisk.textContent = scan.risk_score;
-    modalRisk.className = 'badge rounded-pill px-3 py-2 fs-6';
-    
-    const modalHealthCard = document.getElementById('modalHealthCard');
-    modalHealthCard.className = 'card border-0 rounded-3 p-3 mb-4 text-center shadow-sm';
-
-    if (riskClass === 'low') {
-      modalRisk.classList.add('bg-success', 'text-white');
-      modalHealthCard.classList.add('bg-success-subtle', 'text-success-emphasis');
-      modalHealthMeter.className = 'font-monospace fs-3 text-success fw-bold';
-    } else if (riskClass === 'medium') {
-      modalRisk.classList.add('bg-warning', 'text-dark');
-      modalHealthCard.classList.add('bg-warning-subtle', 'text-warning-emphasis');
-      modalHealthMeter.className = 'font-monospace fs-3 text-warning fw-bold';
-    } else if (riskClass === 'high') {
-      modalRisk.classList.add('bg-danger', 'text-white');
-      modalHealthCard.classList.add('bg-danger-subtle', 'text-danger-emphasis');
-      modalHealthMeter.className = 'font-monospace fs-3 text-danger fw-bold';
-    } else {
-      modalRisk.classList.add('bg-dark', 'text-white');
-      modalHealthCard.classList.add('bg-secondary-subtle', 'text-dark-emphasis');
-      modalHealthMeter.className = 'font-monospace fs-3 text-dark fw-bold';
-    }
-
-    modalTopReasons.innerHTML = '';
-    const topFlags = (scan.red_flags || []).slice(0, 3);
-    if (topFlags.length === 0) {
-      modalTopReasons.innerHTML = '<li class="text-muted border-start border-3 border-secondary bg-light p-2 mb-2 rounded">• No major risk factors</li>';
-    } else {
-      topFlags.forEach(f => {
-        const li = document.createElement('li');
-        li.className = 'border-start border-3 border-danger bg-light p-2 mb-2 rounded fw-semibold';
-        li.textContent = `• ${f.explanation}`;
-        modalTopReasons.appendChild(li);
-      });
-    }
-
-    modalNegotiationTips.innerHTML = '';
-    if (!scan.negotiation_tips || scan.negotiation_tips.length === 0) {
-      modalNegotiationTips.innerHTML = '<li class="list-group-item text-muted">no suggestions</li>';
-    } else {
-      scan.negotiation_tips.forEach(t => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item border-start border-3 border-info bg-light my-1 rounded shadow-sm';
-        li.textContent = t;
-        modalNegotiationTips.appendChild(li);
-      });
-    }
-
-    modalRedFlags.innerHTML = '';
-    if (!scan.red_flags || scan.red_flags.length === 0) {
-      modalRedFlags.innerHTML = '<li class="list-group-item text-muted">no red flags</li>';
-    } else {
-      scan.red_flags.forEach(flag => {
-        const item = document.createElement('li');
-        const severity = flag.severity.toLowerCase();
-        item.className = `list-group-item red-flag-item my-2 red-flag-${severity}`;
-        item.innerHTML = `
-          <strong class="text-capitalize">${flag.severity} Severity</strong>
-          <p class="mb-1 mt-1"><strong>Clause:</strong> "${flag.clause}"</p>
-          <p class="mb-0"><strong>Details:</strong> ${flag.explanation}</p>
-        `;
-        modalRedFlags.appendChild(item);
-      });
-    }
+    renderLoanReport(modalDetailContent, scan);
     detailModal.show();
   } catch (err) {
     alert('error fetching details: ' + err.message);
   }
 }
+
+modalPrintBtn.addEventListener('click', () => window.print());

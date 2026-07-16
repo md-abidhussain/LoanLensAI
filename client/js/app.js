@@ -3,47 +3,172 @@ const fileInput = document.getElementById('fileInput');
 const loadingSpinner = document.getElementById('loadingSpinner');
 const resultCard = document.getElementById('resultCard');
 const errorMessage = document.getElementById('errorMessage');
+const dropZone = document.getElementById('dropZone');
+const browseBtn = document.getElementById('browseBtn');
+const fileChip = document.getElementById('fileChip');
+const fileNameDisplay = document.getElementById('fileNameDisplay');
+const removeFileBtn = document.getElementById('removeFileBtn');
+const downloadReportBtn = document.getElementById('downloadReportBtn');
+const reportContent = document.getElementById('reportContent');
 
-const summaryText = document.getElementById('summaryText');
-const interestRateText = document.getElementById('interestRateText');
-const effectiveAprText = document.getElementById('effectiveAprText');
-const riskScoreBadge = document.getElementById('riskScoreBadge');
-const redFlagsList = document.getElementById('redFlagsList');
-const healthMeterText = document.getElementById('healthMeterText');
-const healthScoreText = document.getElementById('healthScoreText');
-const topReasonsList = document.getElementById('topReasonsList');
-const negotiationTipsList = document.getElementById('negotiationTipsList');
+let currentFile = null;
 
+// Dark Mode Toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+const darkModeIcon = document.getElementById('darkModeIcon');
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-bs-theme', theme);
+  darkModeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+  darkModeToggle.className = theme === 'dark' ? 'btn btn-outline-warning btn-sm' : 'btn btn-outline-light btn-sm';
+  localStorage.setItem('theme', theme);
+}
+
+darkModeToggle.addEventListener('click', () => {
+  const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+  applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+});
+
+const savedTheme = localStorage.getItem('theme') || 'light';
+applyTheme(savedTheme);
+
+// File Selection Handlers
+browseBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    selectFile(e.target.files[0]);
+  }
+});
+
+function selectFile(file) {
+  if (file.size > 5 * 1024 * 1024) {
+    showError('file is too large, max 5MB');
+    return;
+  }
+  currentFile = file;
+  fileNameDisplay.textContent = file.name;
+  fileChip.classList.remove('d-none');
+  dropZone.classList.add('d-none');
+}
+
+removeFileBtn.addEventListener('click', () => {
+  currentFile = null;
+  fileInput.value = '';
+  fileChip.classList.add('d-none');
+  dropZone.classList.remove('d-none');
+});
+
+// Drag & Drop Handlers
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length > 0) {
+    selectFile(e.dataTransfer.files[0]);
+  }
+});
+
+// Try Sample Documents
+document.querySelectorAll('.sample-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const filename = btn.getAttribute('data-sample');
+    try {
+      showLoading(true);
+      const response = await fetch(`/assets/${filename}`);
+      const blob = await response.blob();
+      const file = new File([blob], filename, { type: 'image/png' });
+      selectFile(file);
+      await uploadFile(file);
+    } catch (err) {
+      showError('failed to load sample file');
+      showLoading(false);
+    }
+  });
+});
+
+// Progress Checklist Animation
+const steps = ['upload', 'read', 'extract', 'type', 'apr', 'risks', 'tips', 'report'];
+let stepIndex = 0;
+let stepTimer = null;
+
+function animateSteps() {
+  stepIndex = 0;
+  steps.forEach(s => {
+    const el = document.getElementById(`step-${s}`);
+    el.className = 'process-step py-1 d-flex align-items-center gap-2';
+    el.querySelector('i').className = 'bi bi-circle text-muted';
+  });
+  setStepState(0, 'active');
+  stepTimer = setInterval(() => {
+    if (stepIndex < steps.length - 1) {
+      setStepState(stepIndex, 'completed');
+      stepIndex++;
+      setStepState(stepIndex, 'active');
+    }
+  }, 400);
+}
+
+function setStepState(idx, state) {
+  const el = document.getElementById(`step-${steps[idx]}`);
+  if (!el) return;
+  if (state === 'active') {
+    el.className = 'process-step py-1 d-flex align-items-center gap-2 active';
+    el.querySelector('i').className = 'bi bi-arrow-right-circle-fill text-primary';
+  } else {
+    el.className = 'process-step py-1 d-flex align-items-center gap-2 completed';
+    el.querySelector('i').className = 'bi bi-check-circle-fill text-success';
+  }
+}
+
+function finishSteps() {
+  clearInterval(stepTimer);
+  steps.forEach((_, idx) => setStepState(idx, 'completed'));
+}
+
+// Upload & Scan API Handler
 scanForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const file = fileInput.files[0];
-  if (!file) return showError('please select a file first');
-  if (file.size > 5 * 1024 * 1024) return showError('file is too large, max 5MB');
-
-  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-  if (!allowedTypes.includes(file.type)) return showError('invalid file format');
-
+  if (!currentFile) return showError('please select or drop a file first');
   showLoading(true);
+  await uploadFile(currentFile);
+});
+
+async function uploadFile(file) {
   const formData = new FormData();
   formData.append('file', file);
-
   try {
     const response = await fetch('/api/scan', { method: 'POST', body: formData });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'error during scan');
-    renderResult(data);
+    finishSteps();
+    setTimeout(() => {
+      renderLoanReport(reportContent, data);
+      resultCard.classList.remove('d-none');
+      showLoading(false);
+    }, 400);
   } catch (err) {
     showError(err.message + ', please try again');
-  } finally {
     showLoading(false);
   }
-});
+}
 
 function showLoading(isLoading) {
   loadingSpinner.classList.toggle('d-none', !isLoading);
   if (isLoading) {
     resultCard.classList.add('d-none');
     errorMessage.classList.add('d-none');
+    animateSteps();
+  } else {
+    clearInterval(stepTimer);
   }
 }
 
@@ -53,79 +178,4 @@ function showError(message) {
   resultCard.classList.add('d-none');
 }
 
-function renderResult(data) {
-  summaryText.textContent = data.summary;
-  interestRateText.textContent = data.stated_interest_rate;
-  effectiveAprText.textContent = data.effective_apr;
-  healthMeterText.textContent = data.health_meter;
-  healthScoreText.textContent = data.health_score;
-
-  const riskClass = (data.risk_score || 'medium').toLowerCase();
-  riskScoreBadge.textContent = data.risk_score;
-  riskScoreBadge.className = 'badge rounded-pill px-3 py-2 fs-6';
-  
-  const healthCard = document.getElementById('healthCard');
-  healthCard.className = 'card border-0 rounded-3 p-3 mb-4 text-center shadow-sm';
-
-  if (riskClass === 'low') {
-    riskScoreBadge.classList.add('bg-success', 'text-white');
-    healthCard.classList.add('bg-success-subtle', 'text-success-emphasis');
-    healthMeterText.className = 'font-monospace fs-3 text-success fw-bold';
-  } else if (riskClass === 'medium') {
-    riskScoreBadge.classList.add('bg-warning', 'text-dark');
-    healthCard.classList.add('bg-warning-subtle', 'text-warning-emphasis');
-    healthMeterText.className = 'font-monospace fs-3 text-warning fw-bold';
-  } else if (riskClass === 'high') {
-    riskScoreBadge.classList.add('bg-danger', 'text-white');
-    healthCard.classList.add('bg-danger-subtle', 'text-danger-emphasis');
-    healthMeterText.className = 'font-monospace fs-3 text-danger fw-bold';
-  } else {
-    riskScoreBadge.classList.add('bg-dark', 'text-white');
-    healthCard.classList.add('bg-secondary-subtle', 'text-dark-emphasis');
-    healthMeterText.className = 'font-monospace fs-3 text-dark fw-bold';
-  }
-
-  topReasonsList.innerHTML = '';
-  const topFlags = (data.red_flags || []).slice(0, 3);
-  if (topFlags.length === 0) {
-    topReasonsList.innerHTML = '<li class="text-muted border-start border-3 border-secondary bg-light p-2 mb-2 rounded">• No major risk factors</li>';
-  } else {
-    topFlags.forEach(f => {
-      const li = document.createElement('li');
-      li.className = 'border-start border-3 border-danger bg-light p-2 mb-2 rounded fw-semibold';
-      li.textContent = `• ${f.explanation}`;
-      topReasonsList.appendChild(li);
-    });
-  }
-
-  negotiationTipsList.innerHTML = '';
-  if (!data.negotiation_tips || data.negotiation_tips.length === 0) {
-    negotiationTipsList.innerHTML = '<li class="list-group-item text-muted">no suggestions</li>';
-  } else {
-    data.negotiation_tips.forEach(t => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item border-start border-3 border-info bg-light my-1 rounded shadow-sm';
-      li.textContent = t;
-      negotiationTipsList.appendChild(li);
-    });
-  }
-
-  redFlagsList.innerHTML = '';
-  if (!data.red_flags || data.red_flags.length === 0) {
-    redFlagsList.innerHTML = '<li class="list-group-item text-muted">no red flags</li>';
-  } else {
-    data.red_flags.forEach(f => {
-      const item = document.createElement('li');
-      const severity = f.severity.toLowerCase();
-      item.className = `list-group-item red-flag-item my-2 shadow-sm rounded red-flag-${severity}`;
-      item.innerHTML = `
-        <strong class="text-capitalize">${f.severity} Severity</strong>
-        <p class="mb-1 mt-2"><strong>Clause:</strong> "${f.clause}"</p>
-        <p class="mb-0"><strong>Details:</strong> ${f.explanation}</p>
-      `;
-      redFlagsList.appendChild(item);
-    });
-  }
-  resultCard.classList.remove('d-none');
-  errorMessage.classList.add('d-none');
-}
+downloadReportBtn.addEventListener('click', () => window.print());

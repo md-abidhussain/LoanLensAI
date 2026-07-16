@@ -13,6 +13,15 @@ function parseAnalysisJson(responseText) {
   if (!parsedData.summary || typeof parsedData.summary !== 'string') {
     parsedData.summary = 'no summary provided';
   }
+  if (!parsedData.loan_type || typeof parsedData.loan_type !== 'string') {
+    parsedData.loan_type = 'Other Loan';
+  }
+  if (!parsedData.verdict || typeof parsedData.verdict !== 'string') {
+    parsedData.verdict = 'Read Carefully';
+  }
+  if (!parsedData.verdict_reason || typeof parsedData.verdict_reason !== 'string') {
+    parsedData.verdict_reason = '';
+  }
   if (!parsedData.stated_interest_rate || typeof parsedData.stated_interest_rate !== 'string') {
     parsedData.stated_interest_rate = 'not stated';
   }

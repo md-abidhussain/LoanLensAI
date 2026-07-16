@@ -1,9 +1,12 @@
 function buildPrompt(fileData, fileMimeType, extractedText = null) {
   const promptText = `
-  Analyze this loan agreement and return a JSON object matching this schema. The risk_score must be one of: "Low", "Medium", "High", or "Predatory". The severity of each red flag must be one of: "low", "medium", or "high".
+  Analyze this loan agreement and return a JSON object matching this schema. The risk_score must be one of: "Low", "Medium", "High", or "Predatory". The severity of each red flag must be one of: "low", "medium", or "high". The verdict must be one of: "Safe to Proceed", "Read Carefully", or "Avoid This Loan". The loan_type must be one of: "Car Loan", "Education Loan", "Personal Loan", "Business Loan", "Gold Loan", "Home Loan", or "Other Loan".
   
   JSON schema:
   {
+    "loan_type": "Car Loan | Education Loan | Personal Loan | Business Loan | Gold Loan | Home Loan | Other Loan",
+    "verdict": "Safe to Proceed | Read Carefully | Avoid This Loan",
+    "verdict_reason": "single sentence reason explaining the verdict",
     "summary": "string summary",
     "stated_interest_rate": "string rate",
     "effective_apr": "string APR",
