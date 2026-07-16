@@ -7,7 +7,7 @@ if (!apiKey) {
 }
 
 const genAI = new GoogleGenerativeAI(apiKey || 'dummy_key');
-const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+const geminiModel = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
 
 module.exports = {
   geminiModel
