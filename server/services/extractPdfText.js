@@ -2,7 +2,7 @@ const pdfParse = require('pdf-parse');
 
 async function extractPdfText(pdfBuffer) {
   try {
-    const data = await pdfParse(pdfBuffer);
+    const data = await pdfParse(new Uint8Array(pdfBuffer));
     if (!data || !data.text) {
       throw new Error('failed to extract text from pdf');
     }

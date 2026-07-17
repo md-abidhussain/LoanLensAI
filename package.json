@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.7",
+    "pdf-lib": "^1.17.1",
     "pdfkit": "^0.19.1"
   },
   "engines": {

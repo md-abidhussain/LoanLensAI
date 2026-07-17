@@ -6,9 +6,10 @@ An AI-powered loan agreement analyzer that helps borrowers identify hidden risks
 
 ## Live Demo
 
-**Application:** https://loanlens-ai.onrender.com
+Application: https://loanlens-ai.onrender.com
 
-**GitHub Repository:** https://github.com/md-abidhussain/LoanLensAI
+GitHub Repository:
+https://github.com/md-abidhussain/LoanLensAI
 
 ## Problem
 
@@ -24,17 +25,18 @@ The application extracts document text, analyzes it using Google Gemini, identif
 
 ## Features
 
-- Upload PDF / Image loan agreements
-- AI-powered document analysis using Google Gemini
-- Loan Health Score
-- Effective APR estimation
-- Red Flag Detection
+- Upload PDF and Image Loan Agreements
+- AI-powered Loan Health Score
+- Plain-language Loan Summary
+- Loan Type Detection
+- Effective APR Estimation
+- Risk & Red Flag Detection
 - AI Verdict Card
-- Negotiation Suggestions
-- Downloadable Report
-- Scan History
-- Dark / Light Mode
-- Sample Documents for Demo
+- Negotiation Recommendations
+- Downloadable Analysis Report
+- Scan History Dashboard
+- Sample Loan Documents
+- Dark / Light Theme
 
 ## Demo
 
@@ -49,33 +51,29 @@ These documents are fictional and created only for demonstration purposes.
 ## Screenshots
 
 ### Home Page
-![Home Page](/screenshots/home_page.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Home Page](/screenshots/home_page.png) | ![Home Page Dark](/screenshots/home_page_dark.png) |
 
 ### Analysis Report
-![Analysis Report](/screenshots/analysis_report.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Analysis Report](/screenshots/analysis_report.png) | ![Analysis Report Dark](/screenshots/analysis_report_dark.png) |
 
 ### Scan History
 ![Scan History](/screenshots/scan_history.png)
 
+> Screenshots may vary slightly as the project continues to evolve.
+
 ## Tech Stack
 
-Frontend
-- HTML
-- Bootstrap 5
-- Vanilla JavaScript
-
-Backend
-- Node.js
-- Express.js
-
-Database
-- SQLite
-
-AI
-- Google Gemini Flash Lite
-
-Deployment
-- Render
+| Layer | Technology |
+|--------|------------|
+| Frontend | HTML, Bootstrap 5, Vanilla JavaScript |
+| Backend | Node.js, Express.js |
+| Database | SQLite |
+| AI | Google Gemini Flash Lite |
+| Deployment | Render |
 
 ## System Architecture
 The application is structured as a decoupled Node.js/Express backend and a vanilla HTML/CSS/Bootstrap 5 frontend. SQLite is used for local database persistence, checking and applying migrations dynamically on startup.
@@ -102,13 +100,15 @@ Browser
 ↓
 Express API
 ↓
-Gemini API
+Document Extraction
+↓
+Gemini Analysis
 ↓
 Structured JSON
 ↓
-SQLite
+SQLite Database
 ↓
-Rendered Report
+Rendered Loan Report
 
 ## Folder Structure
 The repository is organized as follows:
@@ -137,7 +137,9 @@ LoanLensAI/
 │   └── safe_home_loan.pdf
 ├── screenshots/
 │   ├── analysis_report.png
+│   ├── analysis_report_dark.png
 │   ├── home_page.png
+│   ├── home_page_dark.png
 │   └── scan_history.png
 ├── server/
 │   ├── config/
@@ -230,8 +232,7 @@ A `/demo-documents` folder is provided containing fictional PDF documents to sho
 
 ## Future Scope
 
-- OCR improvements
-- OCR using Google Vision
+- Google Vision OCR integration
 - Support for regional languages
 - Bank policy comparison
 - Loan recommendation engine
@@ -239,6 +240,7 @@ A `/demo-documents` folder is provided containing fictional PDF documents to sho
 
 ## Challenges Faced
 
+- Designing prompts that consistently produced structured JSON responses
 - Handling inconsistent AI JSON responses
 - Extracting text from both PDF and image files
 - Calculating explainable loan health scores
@@ -247,19 +249,19 @@ A `/demo-documents` folder is provided containing fictional PDF documents to sho
 
 ## Lessons Learned
 
-Building LoanLens AI improved my understanding of:
+Building LoanLens AI improved the understanding of:
 
 - REST API design
 - File uploads using Multer
 - SQLite database management
-- Prompt engineering
+- Designing structured prompts for Large Language Models (LLMs)
 - AI response validation
 - Modular backend architecture
 - Deploying Node.js applications on Render
 
 ## License
 
-This project was created for educational and hackathon purposes.
+This repository is intended for educational and hackathon demonstration purposes only.
 
 ---
 
