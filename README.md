@@ -1,28 +1,40 @@
 # LoanLens AI
 
-AI-powered loan agreement analyzer that helps borrowers understand hidden risks before signing.
+An AI-powered loan agreement analyzer that helps borrowers identify hidden risks, understand complex loan terms, and make informed financial decisions before signing.
 
-Built for AI Hackathon 2026.
+> Built for AI Hackathon 2026 using Node.js, Express, SQLite and Google Gemini Flash Lite.
 
-I built LoanLens AI to help borrowers analyze loan agreements, calculate true effective APR, identify red flags, and obtain automated negotiation recommendations using Google Gemini.
+## Live Demo
+
+**Application:** https://loanlens-ai.onrender.com
+
+**GitHub Repository:** https://github.com/md-abidhussain/LoanLensAI
 
 ## Problem
-I noticed that loan agreements are often lengthy, filled with complex legal jargon, and can contain hidden charges or unfavorable clauses that are difficult for average consumers to spot. Lenders might state a low interest rate, but hidden processing fees, interest compounding structures, or penalty terms can result in a much higher effective APR.
+
+Loan agreements often contain legal language, hidden fees, complex repayment structures, and penalty clauses that are difficult for ordinary borrowers to understand.
+
+As a result, borrowers may unknowingly accept unfavorable financial terms.
 
 ## Solution
-I created LoanLens AI to provide an easy-to-use platform where I can upload loan documents (PDFs or images). The application extracts text, queries the Gemini API for a structured breakdown, estimates true APR, flags warning clauses with severity levels, generates suggestions for negotiation, and provides a clear sign-off verdict.
+
+LoanLens AI allows users to upload a loan agreement in PDF or image format.
+
+The application extracts document text, analyzes it using Google Gemini, identifies risky clauses, estimates the effective APR, calculates a loan health score, and provides negotiation suggestions in plain language.
 
 ## Features
-- **Hero Landing Panel**: Quick access to the core value proposition and fast navigation to scan or check history.
-- **Drag & Drop Upload Zone**: Modern file input zone supporting PDF, JPEG, and PNG.
-- **AI Processing Animation**: Step-by-step sequential feedback checklist that updates as the document is analyzed.
-- **Dynamic Health Meter**: Visual health progress indicators based on warning flags.
-- **APR Comparison Charts**: Side-by-side comparison of stated rate vs effective APR.
-- **AI Sign-off Verdict**: A clear recommendation on whether the user should proceed, exercise caution, or avoid the contract.
-- **Downloadable Print Reports**: Dedicated print stylesheets to print a clean document report.
-- **Filterable History Dashboard**: A grid-card view of past scans, showing Loan Type, Verdict, and calculated Health Score, filterable by risk levels and searchable by name, with quick aggregate stats.
-- **Try Sample Documents**: Preloaded fictional PDF documents for fast judging.
-- **Dark Mode Switch**: Fully integrated color theme toggle.
+
+- Upload PDF / Image loan agreements
+- AI-powered document analysis using Google Gemini
+- Loan Health Score
+- Effective APR estimation
+- Red Flag Detection
+- AI Verdict Card
+- Negotiation Suggestions
+- Downloadable Report
+- Scan History
+- Dark / Light Mode
+- Sample Documents for Demo
 
 ## Demo
 
@@ -33,6 +45,17 @@ Sample loan agreements are included for quick evaluation.
 - predatory_personal_loan.pdf → Predatory Risk
 
 These documents are fictional and created only for demonstration purposes.
+
+## Screenshots
+
+### Home Page
+![Home Page](/screenshots/home_page.png)
+
+### Analysis Report
+![Analysis Report](/screenshots/analysis_report.png)
+
+### Scan History
+![Scan History](/screenshots/scan_history.png)
 
 ## Tech Stack
 
@@ -55,7 +78,7 @@ Deployment
 - Render
 
 ## System Architecture
-I structured the application as a decoupled Node.js/Express backend and a vanilla HTML/CSS/Bootstrap 5 frontend. I use SQLite for local database persistence, checking and applying migrations dynamically on startup.
+The application is structured as a decoupled Node.js/Express backend and a vanilla HTML/CSS/Bootstrap 5 frontend. SQLite is used for local database persistence, checking and applying migrations dynamically on startup.
 
 ```mermaid
 graph TD
@@ -73,8 +96,22 @@ graph TD
     GeminiClient -->|Validate Response Schema| JSONParser[JSON Parser]
 ```
 
+### Flow
+
+Browser
+↓
+Express API
+↓
+Gemini API
+↓
+Structured JSON
+↓
+SQLite
+↓
+Rendered Report
+
 ## Folder Structure
-I organized the repository as follows:
+The repository is organized as follows:
 ```text
 LoanLensAI/
 ├── client/
@@ -98,6 +135,10 @@ LoanLensAI/
 │   ├── education_loan.pdf
 │   ├── predatory_personal_loan.pdf
 │   └── safe_home_loan.pdf
+├── screenshots/
+│   ├── analysis_report.png
+│   ├── home_page.png
+│   └── scan_history.png
 ├── server/
 │   ├── config/
 │   │   ├── constants.js
@@ -129,22 +170,15 @@ LoanLensAI/
 
 ## API Endpoints
 
-### 1. Submit Scan
-- **Endpoint**: `POST /api/scan`
-- **Payload**: Multipart file upload (`file` key containing PDF, JPG, or PNG)
-- **Output**: JSON payload containing the formatted report, health scores, list of red flags, and tips.
-
-### 2. List History
-- **Endpoint**: `GET /api/scans`
-- **Output**: Array of past scans containing ID, filename, risk score, date, loan type, verdict, verdict reason, and health metrics.
-
-### 3. Fetch Scan Details
-- **Endpoint**: `GET /api/scans/:id`
-- **Output**: Full detailed JSON log of the scan.
+| Method | Endpoint | Purpose |
+|--------|----------|----------|
+| POST | /api/scan | Analyze loan |
+| GET | /api/scans | Scan history |
+| GET | /api/scans/:id | Detailed report |
 
 ## Installation
 
-I install and configure the application locally using the following steps:
+The application can be installed and configured locally using the following steps:
 1. Clone the repository to the local environment.
 2. In the root directory, install all required dependencies:
    ```bash
@@ -169,18 +203,18 @@ I install and configure the application locally using the following steps:
 ## Deployment Guide (Render)
 
 ### Free Tier Deployment
-1. I create a new Web Service on Render pointing to my repository.
-2. I select Node runtime.
-3. I use `npm install` for the Build Command, and `node server/server.js` for the Start Command.
-4. I add the environment variable `GEMINI_API_KEY` containing my Google AI Studio key.
+1. Create a new Web Service on Render pointing to the repository.
+2. Select the Node runtime.
+3. Use `npm install` for the Build Command, and `node server/server.js` for the Start Command.
+4. Add the environment variable `GEMINI_API_KEY` containing the Google AI Studio key.
 
 ### Persistent Database Deployment (Starter Tier)
-1. I add a Persistent Disk on Render with Mount Path `/data`.
-2. I configure the environment variable `DATABASE_PATH` with value `/data/database.db` to prevent sqlite data from resetting on deployment restarts.
+1. Add a Persistent Disk on Render with Mount Path `/data`.
+2. Configure the environment variable `DATABASE_PATH` with value `/data/database.db` to prevent sqlite database reset on deployment restarts.
 
 ## Demo Steps
 
-I created a `/demo-documents` folder containing fictional PDF documents to showcase the capabilities of LoanLens AI. I can download these files and manually upload them, or use the "Try Sample Documents" buttons on the scan page.
+A `/demo-documents` folder is provided containing fictional PDF documents to showcase the capabilities of LoanLens AI. These files can be downloaded and manually uploaded, or used with the "Try Sample Documents" buttons on the scan page.
 
 1. **Safe Home Loan (`safe_home_loan.pdf`)**
    - **How to test**: Click on the "Safe Home Loan" button or upload the PDF from the `/demo-documents` directory.
@@ -201,3 +235,27 @@ I created a `/demo-documents` folder containing fictional PDF documents to showc
 - Bank policy comparison
 - Loan recommendation engine
 - Financial chatbot
+
+## Challenges Faced
+
+- Handling inconsistent AI JSON responses
+- Extracting text from both PDF and image files
+- Calculating explainable loan health scores
+- Keeping the architecture modular while remaining beginner-friendly
+- Building a responsive UI without frontend frameworks
+
+## Lessons Learned
+
+Building LoanLens AI improved my understanding of:
+
+- REST API design
+- File uploads using Multer
+- SQLite database management
+- Prompt engineering
+- AI response validation
+- Modular backend architecture
+- Deploying Node.js applications on Render
+
+## License
+
+This project was created for educational and hackathon purposes.
