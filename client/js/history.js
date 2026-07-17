@@ -16,7 +16,6 @@ const modalPrintBtn = document.getElementById('modalPrintBtn');
 
 let allScans = [];
 
-// Dark Mode Toggle
 const darkModeToggle = document.getElementById('darkModeToggle');
 const darkModeIcon = document.getElementById('darkModeIcon');
 
@@ -63,7 +62,7 @@ function calculateStats(scans) {
     if (r === 'low') low++;
     else if (r === 'medium') med++;
     else high++;
-    totalHealth += s.health_score || 70;
+    totalHealth += s.health_score || 0;
   });
 
   statLow.textContent = low;
@@ -100,10 +99,14 @@ function renderCards(scans) {
     col.className = 'col-md-6 col-lg-4';
     
     const rClass = (s.risk_score || 'medium').toLowerCase();
-    let badgeColor = 'bg-warning text-dark';
-    if (rClass === 'low') badgeColor = 'bg-success text-white';
-    else if (rClass === 'high') badgeColor = 'bg-danger text-white';
-    else if (rClass === 'predatory') badgeColor = 'bg-dark text-white';
+    let badgeColor = 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+    if (rClass === 'low') {
+      badgeColor = 'bg-success-subtle text-success-emphasis border border-success-subtle';
+    } else if (rClass === 'high') {
+      badgeColor = 'bg-danger-subtle text-danger-emphasis border border-danger-subtle';
+    } else if (rClass === 'predatory') {
+      badgeColor = 'bg-dark-subtle text-dark-emphasis border border-dark-subtle';
+    }
 
     const formattedDate = new Date(s.created_at).toLocaleDateString();
     
@@ -118,14 +121,17 @@ function renderCards(scans) {
               <small class="text-muted">${formattedDate}</small>
             </div>
             <h5 class="fw-bold mb-2 text-truncate">${s.filename}</h5>
-            <div class="mb-3">
+            <div class="mb-3 d-flex flex-wrap gap-1">
               <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.75rem;">
                 <i class="bi bi-file-earmark-text"></i> ${s.loan_type || 'Other Loan'}
+              </span>
+              <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.75rem;">
+                <i class="bi bi-check-circle-fill"></i> ${s.verdict || 'Read Carefully'}
               </span>
             </div>
             <div class="mb-3 bg-light p-2 rounded text-center">
               <small class="text-muted d-block" style="font-size: 0.75rem;">Health Score</small>
-              <strong class="text-primary">${s.health_score || 70}%</strong>
+              <strong class="text-primary">${s.health_score || 0}%</strong>
             </div>
           </div>
           <button class="btn btn-outline-primary w-100 rounded-pill btn-sm mt-3 view-btn" data-id="${s.id}">

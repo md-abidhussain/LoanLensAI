@@ -13,7 +13,6 @@ const reportContent = document.getElementById('reportContent');
 
 let currentFile = null;
 
-// Dark Mode Toggle
 const darkModeToggle = document.getElementById('darkModeToggle');
 const darkModeIcon = document.getElementById('darkModeIcon');
 
@@ -32,7 +31,6 @@ darkModeToggle.addEventListener('click', () => {
 const savedTheme = localStorage.getItem('theme') || 'light';
 applyTheme(savedTheme);
 
-// File Selection Handlers
 browseBtn.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', (e) => {
@@ -59,7 +57,6 @@ removeFileBtn.addEventListener('click', () => {
   dropZone.classList.remove('d-none');
 });
 
-// Drag & Drop Handlers
 dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
   dropZone.classList.add('dragover');
@@ -77,7 +74,6 @@ dropZone.addEventListener('drop', (e) => {
   }
 });
 
-// Try Sample Documents
 document.querySelectorAll('.sample-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
     const filename = btn.getAttribute('data-sample');
@@ -85,7 +81,8 @@ document.querySelectorAll('.sample-btn').forEach(btn => {
       showLoading(true);
       const response = await fetch(`/assets/${filename}`);
       const blob = await response.blob();
-      const file = new File([blob], filename, { type: 'image/png' });
+      const mimeType = filename.endsWith('.pdf') ? 'application/pdf' : 'image/png';
+      const file = new File([blob], filename, { type: mimeType });
       selectFile(file);
       await uploadFile(file);
     } catch (err) {
@@ -95,7 +92,6 @@ document.querySelectorAll('.sample-btn').forEach(btn => {
   });
 });
 
-// Progress Checklist Animation
 const steps = ['upload', 'read', 'extract', 'type', 'apr', 'risks', 'tips', 'report'];
 let stepIndex = 0;
 let stepTimer = null;
@@ -134,7 +130,6 @@ function finishSteps() {
   steps.forEach((_, idx) => setStepState(idx, 'completed'));
 }
 
-// Upload & Scan API Handler
 scanForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!currentFile) return showError('please select or drop a file first');

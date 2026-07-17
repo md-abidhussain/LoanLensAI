@@ -33,33 +33,33 @@
 
       <div class="row g-3 mb-5 text-center">
         <div class="col-6 col-md-3">
-          <div class="card card-premium p-3 bg-primary text-white border-0">
-            <h6 class="mb-1 text-white-50 text-uppercase" style="font-size: 0.8rem;">Total Scans</h6>
+          <div class="card card-premium p-3 bg-primary-subtle text-primary-emphasis border border-primary-subtle">
+            <h6 class="mb-1 text-primary-emphasis text-uppercase" style="font-size: 0.8rem; font-weight: 600;">Total Scans</h6>
             <h3 class="fw-bold mb-0" id="statTotal">0</h3>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="card card-premium p-3 bg-success text-white border-0">
-            <h6 class="mb-1 text-white-50 text-uppercase" style="font-size: 0.8rem;">Low Risk</h6>
+          <div class="card card-premium p-3 bg-success-subtle text-success-emphasis border border-success-subtle">
+            <h6 class="mb-1 text-success-emphasis text-uppercase" style="font-size: 0.8rem; font-weight: 600;">Low Risk</h6>
             <h3 class="fw-bold mb-0" id="statLow">0</h3>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="card card-premium p-3 bg-warning text-dark border-0">
-            <h6 class="mb-1 text-dark-50 text-uppercase" style="font-size: 0.8rem;">Med Risk</h6>
+          <div class="card card-premium p-3 bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+            <h6 class="mb-1 text-warning-emphasis text-uppercase" style="font-size: 0.8rem; font-weight: 600;">Med Risk</h6>
             <h3 class="fw-bold mb-0" id="statMedium">0</h3>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="card card-premium p-3 bg-danger text-white border-0">
-            <h6 class="mb-1 text-white-50 text-uppercase" style="font-size: 0.8rem;">High/Predatory</h6>
+          <div class="card card-premium p-3 bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+            <h6 class="mb-1 text-danger-emphasis text-uppercase" style="font-size: 0.8rem; font-weight: 600;">High/Predatory</h6>
             <h3 class="fw-bold mb-0" id="statHigh">0</h3>
           </div>
         </div>
         <div class="col-12 mt-3">
-          <div class="card card-premium p-3 bg-light border-0">
-            <h6 class="mb-1 text-muted text-uppercase" style="font-size: 0.8rem;">Average Health Score</h6>
-            <h3 class="fw-bold mb-0 text-primary" id="statAvgHealth">0%</h3>
+          <div class="card card-premium p-3 bg-info-subtle text-info-emphasis border border-info-subtle">
+            <h6 class="mb-1 text-info-emphasis text-uppercase" style="font-size: 0.8rem; font-weight: 600;">Average Health Score</h6>
+            <h3 class="fw-bold mb-0" id="statAvgHealth">0%</h3>
           </div>
         </div>
       </div>
@@ -116,7 +116,11 @@
     <p class="mb-0">&copy; 2026 LoanLens AI. All rights reserved.</p>
   </footer>
 
-  <script src="/js/renderShared.js"></script>
+  <script src="/js/renderVerdictCard.js"></script>
+  <script src="/js/renderAprBars.js"></script>
+  <script src="/js/renderRedFlags.js"></script>
+  <script src="/js/renderNegotiationTips.js"></script>
+  <script src="/js/renderLoanReport.js"></script>
   <script src="/js/history.js"></script>
 </body>
 </html>

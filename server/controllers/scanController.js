@@ -1,7 +1,7 @@
 const extractPdfText = require('../services/extractPdfText');
 const { analyzeDocument } = require('../services/geminiClient');
-const { insertScan, fetchScans, fetchScanById } = require('./saveScan');
-const { formatScanResponse, calculateHealthMetrics } = require('./responseFormatter');
+const { insertScan, fetchScans, fetchScanById } = require('../database/scanRepository');
+const { formatScanResponse, calculateHealthMetrics } = require('../utils/responseFormatter');
 
 async function createScan(req, res) {
   const file = req.file;
@@ -27,28 +27,22 @@ async function getScans(req, res) {
   try {
     const rows = await fetchScans();
     const mapped = rows.map(row => {
-      let summaryText = row.summary;
-      let loanType = 'Other Loan';
-      let verdict = 'Read Carefully';
-      let healthScore = 70;
-      let healthMeter = '███████░░░';
+      let redFlags = [];
       try {
-        const parsed = JSON.parse(row.summary);
-        summaryText = parsed.text;
-        loanType = parsed.loan_type || 'Other Loan';
-        verdict = parsed.verdict || 'Read Carefully';
-        healthScore = parsed.health_score || 70;
-        healthMeter = parsed.health_meter || '███████░░░';
+        redFlags = JSON.parse(row.red_flags || '[]');
       } catch (e) {
-        // Fallback for legacy
       }
+      const metrics = calculateHealthMetrics(redFlags, row.risk_score);
       return {
-        ...row,
-        summary: summaryText,
-        loan_type: loanType,
-        verdict: verdict,
-        health_score: healthScore,
-        health_meter: healthMeter
+        id: row.id,
+        filename: row.filename,
+        risk_score: row.risk_score,
+        summary: row.summary,
+        loan_type: row.loan_type,
+        verdict: row.verdict,
+        verdict_reason: row.verdict_reason,
+        created_at: row.created_at,
+        ...metrics
       };
     });
     return res.json(mapped);
@@ -65,42 +59,34 @@ async function getScanById(req, res) {
       return res.status(404).json({ error: 'scan not found' });
     }
     
-    let summaryText = row.summary;
-    let loanType = 'Other Loan';
-    let verdict = 'Read Carefully';
-    let verdictReason = '';
-    
+    let redFlags = [];
     try {
-      const parsed = JSON.parse(row.summary);
-      summaryText = parsed.text;
-      loanType = parsed.loan_type || 'Other Loan';
-      verdict = parsed.verdict || 'Read Carefully';
-      verdictReason = parsed.verdict_reason || '';
-    } catch (e) {
-      // Fallback for legacy
-    }
-
-    try {
-      row.red_flags = JSON.parse(row.red_flags);
+      redFlags = JSON.parse(row.red_flags || '[]');
     } catch (parseErr) {
       console.error('json parse failure', parseErr.message);
-      row.red_flags = [];
     }
     
+    let tips = [];
     try {
-      row.negotiation_tips = JSON.parse(row.negotiation_tips || '[]');
+      tips = JSON.parse(row.negotiation_tips || '[]');
     } catch (parseErr) {
       console.error('json parse failure', parseErr.message);
-      row.negotiation_tips = [];
     }
     
-    const metrics = calculateHealthMetrics(row.red_flags, row.risk_score);
+    const metrics = calculateHealthMetrics(redFlags, row.risk_score);
     const responseData = {
-      ...row,
-      summary: summaryText,
-      loan_type: loanType,
-      verdict: verdict,
-      verdict_reason: verdictReason,
+      id: row.id,
+      filename: row.filename,
+      summary: row.summary,
+      loan_type: row.loan_type,
+      verdict: row.verdict,
+      verdict_reason: row.verdict_reason,
+      stated_interest_rate: row.stated_interest_rate,
+      effective_apr: row.effective_apr,
+      risk_score: row.risk_score,
+      red_flags: redFlags,
+      negotiation_tips: tips,
+      created_at: row.created_at,
       ...metrics
     };
     

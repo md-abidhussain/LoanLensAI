@@ -1,25 +1,18 @@
-const db = require('../database/database');
-const { calculateHealthMetrics } = require('./responseFormatter');
+const db = require('./database');
 
 function insertScan(filename, analysis) {
   return new Promise((resolve, reject) => {
     const query = `
-      INSERT INTO scans (filename, summary, stated_interest_rate, effective_apr, risk_score, red_flags, negotiation_tips)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO scans (filename, summary, loan_type, verdict, verdict_reason, stated_interest_rate, effective_apr, risk_score, red_flags, negotiation_tips)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const metrics = calculateHealthMetrics(analysis.red_flags, analysis.risk_score);
-    const serializedSummary = JSON.stringify({
-      text: analysis.summary,
-      loan_type: analysis.loan_type || 'Other Loan',
-      verdict: analysis.verdict || 'Read Carefully',
-      verdict_reason: analysis.verdict_reason || '',
-      health_score: metrics.health_score,
-      health_meter: metrics.health_meter
-    });
 
     const params = [
       filename,
-      serializedSummary,
+      analysis.summary,
+      analysis.loan_type || 'Other Loan',
+      analysis.verdict || 'Read Carefully',
+      analysis.verdict_reason || '',
       analysis.stated_interest_rate,
       analysis.effective_apr,
       analysis.risk_score,
@@ -39,7 +32,7 @@ function insertScan(filename, analysis) {
 
 function fetchScans() {
   return new Promise((resolve, reject) => {
-    const query = 'SELECT id, filename, risk_score, summary, created_at FROM scans ORDER BY created_at DESC';
+    const query = 'SELECT id, filename, risk_score, summary, loan_type, verdict, verdict_reason, red_flags, created_at FROM scans ORDER BY created_at DESC';
     db.all(query, [], (err, rows) => {
       if (err) {
         reject(err);
