@@ -2,7 +2,7 @@
 
 An AI-powered loan agreement analyzer that helps borrowers identify hidden risks, understand complex loan terms, and make informed financial decisions before signing.
 
-> Built for AI Hackathon 2026 using Node.js, Express, SQLite and Google Gemini Flash Lite.
+> Built as a prototype for an AI Hackathon 2026 submission using Node.js, Express, SQLite and Google Gemini Flash Lite.
 
 ## Live Demo
 
@@ -231,6 +231,7 @@ A `/demo-documents` folder is provided containing fictional PDF documents to sho
 ## Future Scope
 
 - OCR improvements
+- OCR using Google Vision
 - Support for regional languages
 - Bank policy comparison
 - Loan recommendation engine
@@ -259,3 +260,7 @@ Building LoanLens AI improved my understanding of:
 ## License
 
 This project was created for educational and hackathon purposes.
+
+---
+
+This project uses fictional loan agreements created only for demonstration purposes.
